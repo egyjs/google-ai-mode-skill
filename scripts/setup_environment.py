@@ -10,6 +10,12 @@ import subprocess
 import venv
 from pathlib import Path
 
+# Fix Windows console encoding for emoji/unicode output
+if sys.stdout.encoding and sys.stdout.encoding.lower() != 'utf-8':
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+if sys.stderr.encoding and sys.stderr.encoding.lower() != 'utf-8':
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+
 
 class SkillEnvironment:
     """Manages skill-specific virtual environment"""
