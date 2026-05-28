@@ -26,6 +26,7 @@ import re
 from pathlib import Path
 from typing import List, Dict, Optional, Any
 from datetime import datetime
+from urllib.parse import urlencode
 
 # Third-party imports
 from patchright.sync_api import sync_playwright, Page
@@ -96,6 +97,12 @@ AI_COMPLETION_TEXT_INDICATORS = [
 
 # Disclaimer cutoff markers (remove everything after these)
 CUTOFF_MARKERS = [
+    # Google sharing/feedback UI
+    'Copy\n\n# Share public link',
+    '# Share public link',
+    'This public link is valid for 7 days',
+    'Good response',
+    'Bad response',
     # German
     'KI-Antworten können Fehler enthalten',
     'Öffentlicher Link wird erstellt',
@@ -500,13 +507,30 @@ class GoogleAIScraper:
 
         return modified_md, citation_sources
 
+    def _english_query(self, query: str) -> str:
+        """Force Google AI Mode to search and answer in English."""
+        english_instruction = "Answer in English. Use English-language sources when possible."
+        if english_instruction.lower() in query.lower():
+            return query
+        return f"{query}. {english_instruction}"
+
     def scrape(self, query: str) -> Dict[str, Any]:
         """Führt den kompletten Scraping-Prozess durch"""
         if not self.page:
             raise RuntimeError("Browser not started. Call start() first.")
 
-        url = f"https://www.google.com/search?udm=50&q={query.replace(' ', '+')}"
-        print(f"  🌐 Loading Query: {query[:50]}...")
+        search_query = self._english_query(query)
+        params = urlencode({
+            "udm": "50",
+            "q": search_query,
+            "hl": "en",
+            "gl": "us",
+            "lr": "lang_en",
+        })
+        url = f"https://www.google.com/search?{params}"
+        print(f"  🌐 Loading Query: {search_query[:50]}...")
+        self.logger.debug(f"Original query: {query}")
+        self.logger.debug(f"English-forced query: {search_query}")
         self.logger.debug(f"Navigating to: {url}")
 
         try:
@@ -721,14 +745,8 @@ class GoogleAIScraper:
         # Entferne leere Links
         markdown = re.sub(r'\[\]\([^)]+\)', '', markdown)
 
-        # RADIKALER CUT-OFF: Alles ab dem AI-Disclaimer entfernen
-        cut_off_markers = [
-            'KI-Antworten können Fehler enthalten',
-            'AI-generated answers may contain mistakes',
-            'Öffentlicher Link wird erstellt'
-        ]
-
-        for marker in cut_off_markers:
+        # RADIKALER CUT-OFF: Alles ab dem AI-Disclaimer oder Google UI entfernen
+        for marker in CUTOFF_MARKERS:
             if marker in markdown:
                 markdown = markdown.split(marker)[0]
                 self.logger.debug(f"Cut off content at marker: {marker[:30]}...")

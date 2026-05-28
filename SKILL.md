@@ -133,10 +133,11 @@ The `run.py` wrapper automatically:
 
 1. **Persistent Browser Context**: Uses saved browser profile at `~/.cache/google-ai-mode-skill/chrome_profile` to preserve cookies/session between searches
 2. **Eliminates CAPTCHAs**: Persistent context means Google recognizes the browser → rarely triggers CAPTCHA
-3. **AI Content Detection**: Waits for Google AI Overview to appear on page
-4. **Citation Extraction**: Injects JavaScript to extract source links from AI response
-5. **Markdown Conversion**: Converts HTML to markdown with inline citations [1][2][3]
-6. **Fast Results**: Typical search completes in 5-7 seconds (no CAPTCHA)
+3. **English Search Enforcement**: Adds English Google parameters (`hl=en`, `gl=us`, `lr=lang_en`) and appends an English-answer instruction to every query
+4. **AI Content Detection**: Waits for Google AI Overview to appear on page
+5. **Citation Extraction**: Injects JavaScript to extract source links from AI response
+6. **Markdown Conversion**: Converts HTML to markdown with inline citations [1][2][3]
+7. **Fast Results**: Typical search completes in 5-7 seconds (no CAPTCHA)
 
 ## CAPTCHA Handling
 
