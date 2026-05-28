@@ -108,11 +108,19 @@ python scripts/run.py search.py --query "..." --output result.md --json
 python scripts/run.py search.py --query "Your search query"
 ```
 
+If `python` is not available on the host, use `python3` instead:
+
+```bash
+python3 scripts/run.py search.py --query "Your search query"
+```
+
 ### Recommended Usage
 
 ```bash
 python scripts/run.py search.py --query "..." --save --debug
 ```
+
+If `python` is missing, run the same command with `python3`.
 
 The `run.py` wrapper automatically:
 - Creates `.venv` on first run
